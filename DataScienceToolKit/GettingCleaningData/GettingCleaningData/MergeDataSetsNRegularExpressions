@@ -1,0 +1,57 @@
+install.packages("dplyr")
+library(dplyr)
+
+install.packages("openxlsx")
+packageVersion("openxlsx")
+library (openxlsx)
+
+setwd("N:/IT APM/Data Analysis/PetTrack/")
+
+list.files()
+
+GISaddress = read.csv("GIS Pierce Address.csv", as.is = T)
+# str(GISaddress)
+
+pierceaddress<-read.xlsx("PierceAddresses.xlsx", sheet=1, startRow=1)
+# head(pierceaddresses)
+
+mailaddresspierce<-read.xlsx("MailingAddressesPierce.xlsx", sheet=1, startRow=1)
+# head(mailaddressespierce)
+
+## Function to edit the addresses
+editAddress=function(address,pattern,replaceptn=pattern,sub,note ){
+  a = grep(pattern, address$Address, ignore.case = T) 
+  address[a, "Address"] = gsub(replaceptn, sub, address[a, "Address"], ignore.case = T) 
+  index=(1:dim(address)[1])[address[,"Note"]==""]
+  address[intersect(a, index), "Note"] = note
+  if (!is.element(note, strsplit(address$Notes, '\\|'))){
+    address[a,"Notes"]=paste(address[a,"Notes"],note, sep="|")
+  }
+  return(address)
+}
+
+## Function to trim spaces: \\s+ matches one or many "whitespace character" at the end of the line; 
+# and use $ for end of the line.
+trim.trailing <- function (x) sub("\\s+$", "", x)
+
+# address = read.csv("M:/PetTrack/addresses.csv", as.is = T)
+pierceaddress<-read.xlsx("PierceAddresses.xlsx", sheet=1, startRow=1)
+# address = 
+pierceaddress = 
+# dim(address)
+dim(pierceaddress)
+# original=address
+original=pierceaddress
+# address[,"OrigAddr"]=address$Address
+pierceaddress[,"OrigAddr"]=pierceaddress$Address
+address[,"Address"]= toupper(address$Address)
+address[,"Note"]=""
+address[,"Notes"]=""
+
+# merge or join and find matches with GIS address
+# find mismatches
+# function to update mismatches that uses grep, sub, gsubs
+
+# WRITE the 2 tables of clean data into one CLEANDATA
+# WRITE the matches into CLEANDATA?
+# WRITE the clean address into the one Clean table
