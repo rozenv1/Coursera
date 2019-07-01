@@ -1,0 +1,52 @@
+# First install MySQL from any of these links at this URL.
+# https://www.mysql.com/doc/refman/5.7/en/installing.html
+# I installed MySQL Community Server 8.0.16 (usually the community edition, INCLUDING the C-Connector)
+# Second, install RTools by following the instructions and configurations: http://www.ahschulz.de/2013/07/23/installing-rmysql-under-windows/
+# or by going directly to http://biostat.mc.vanderbilt.edu/wiki/Main/RMySQL
+
+library(RMySQL)
+# First, connect to the db by using dbConnect and assign the connection a handle.
+# In this case, this opens the connection and this connection is given this handle ucscDb.
+ucscDB<-dbConnect(MySQL(), user="genome",
+                  host="genome-mysql.cse.ucsc.edu")
+# Next, you apply a query to the database by using the dbGetQuery command.
+# the TRUE response you get is that you succesfully disconnected from the connection to ucscDB.
+
+result<-dbGetQuery(ucscDB,"show databases;"); dbDisconnect(ucscDB);
+
+# the results is a list of all the dbs available within MySQL server that is located at the host address:
+# host="genome-mysql.cse.ucsc.edu"
+result
+
+# For this exercise will focuc on the hg19 database, which is a build in the human genome
+hg19<-dbConnect(MySQL(), user="genome", db="hg19",
+                host="genome-mysql.cse.ucsc.edu")
+allTables <- dbListTables(hg19)
+length(allTables)
+allTables[1:5]
+
+## Getting Dimensions of a specific table
+# looking at all the fields in a particular dataframe or table "affyU133Plus2"
+dbListFields(hg19,"affyU133Plus2")
+# finding out how many rows or # of records in this dataset
+dbGetQuery(hg19, "select count(*) from affyU133Plus2")
+
+##  Read from the table, and extracting the data one table at a time.
+affyData<-dbReadTable(hg19,"affyU133Plus2")
+head(affyData)
+
+# Select a specific subset, if the db is too big
+query <- dbSendQuery(hg19, "select * from affyU133Plus2 where misMatches between 1 and 3")
+affyMis <- fetch(query); quantile(affyMis$misMatches)
+affyMisSmall <- fetch(query,n=10); dbClearResult(query); # this allows you download only the 10 first records and then close the connection to the query.
+dim(affyMisSmall)
+
+# don't forget to close the connection!!!
+dbDisconnect(hg19)
+
+# For sample commands go to:
+# RMySQL vignette [http://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf](http://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf)
+# List of commands [http://www.pantz.org/software/mysql/mysqlcommands.html](http://www.pantz.org/software/mysql/mysqlcommands.html)
+# Do not, do not, delete, add or join things from ensembl. Only select.__
+# In general be careful with mysql commands
+# A nice blog post summarizing some other commands [http://www.r-bloggers.com/mysql-and-r/](http://www.r-bloggers.com/mysql-and-r/)
